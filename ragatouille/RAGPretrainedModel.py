@@ -12,7 +12,7 @@ from ragatouille.integrations import (
     RAGatouilleLangChainRetriever,
 )
 from ragatouille.models import ColBERT, LateInteractionModel
-
+from memory_profiler import profile
 
 class RAGPretrainedModel:
     """
@@ -198,9 +198,18 @@ class RAGPretrainedModel:
         Returns:
             index (str): The path to the index that was built.
         """
+        @profile
+        def _process_corpus_profiled(*args, **kwargs):
+            return self._process_corpus(*args, **kwargs)
+        
+        @profile
+        def _model_index_profiled(*args, **kwargs):
+            return self.model.index(*args, **kwargs)
+            
         if not split_documents:
             document_splitter_fn = None
-        collection, pid_docid_map, docid_metadata_map = self._process_corpus(
+            
+        collection, pid_docid_map, docid_metadata_map = _process_corpus_profiled(
             collection,
             document_ids,
             document_metadatas,
@@ -208,7 +217,8 @@ class RAGPretrainedModel:
             preprocessing_fn,
             max_document_length,
         )
-        return self.model.index(
+        
+        return _model_index_profiled(
             collection,
             pid_docid_map=pid_docid_map,
             docid_metadata_map=docid_metadata_map,
