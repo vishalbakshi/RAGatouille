@@ -11,6 +11,7 @@ from colbert.indexing.collection_indexer import CollectionIndexer
 from colbert.infra import ColBERTConfig
 
 from ragatouille.models import torch_kmeans
+from memory_profiler import profile
 
 IndexType = Literal["FLAT", "HNSW", "PLAID"]
 
@@ -152,7 +153,11 @@ class PLAIDModelIndex(ModelIndex):
     ) -> "PLAIDModelIndex":
         _, _, _, _ = index_path, index_name, index_config, verbose
         return PLAIDModelIndex(config)
-
+        
+    @profile
+    def _index_with_profiling(indexer, name, collection, overwrite):
+        return indexer.index(name=name, collection=collection, overwrite=overwrite)
+        
     def build(
         self,
         checkpoint: Union[str, Path],
@@ -209,9 +214,7 @@ class PLAIDModelIndex(ModelIndex):
                     verbose=verbose,
                 )
                 indexer.configure(avoid_fork_if_possible=True)
-                indexer.index(
-                    name=index_name, collection=collection, overwrite=overwrite
-                )
+                _index_with_profiling(indexer, index_name, collection, overwrite)
             except Exception as err:
                 print(
                     f"PyTorch-based indexing did not succeed with error: {err}",
@@ -240,7 +243,7 @@ class PLAIDModelIndex(ModelIndex):
                 verbose=verbose,
             )
             indexer.configure(avoid_fork_if_possible=True)
-            indexer.index(name=index_name, collection=collection, overwrite=overwrite)
+            _index_with_profiling(indexer, index_name, collection, overwrite)
 
         return self
 
