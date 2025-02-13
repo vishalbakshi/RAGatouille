@@ -154,10 +154,6 @@ class PLAIDModelIndex(ModelIndex):
         _, _, _, _ = index_path, index_name, index_config, verbose
         return PLAIDModelIndex(config)
         
-    @profile
-    def _index_with_profiling(indexer, name, collection, overwrite):
-        return indexer.index(name=name, collection=collection, overwrite=overwrite)
-        
     def build(
         self,
         checkpoint: Union[str, Path],
@@ -167,6 +163,7 @@ class PLAIDModelIndex(ModelIndex):
         verbose: bool = True,
         **kwargs,
     ) -> "PLAIDModelIndex":
+        
         bsize = kwargs.get("bsize", PLAIDModelIndex._DEFAULT_INDEX_BSIZE)
         assert isinstance(bsize, int)
 
@@ -191,6 +188,11 @@ class PLAIDModelIndex(ModelIndex):
         monkey_patching = (
             len(collection) < 75000 and kwargs.get("use_faiss", False) is False
         )
+
+        @profile
+        def _index_with_profiling(indexer, name, collection, overwrite):
+            return indexer.index(name=name, collection=collection, overwrite=overwrite)
+            
         if monkey_patching:
             print(
                 "---- WARNING! You are using PLAID with an experimental replacement for FAISS for greater compatibility ----"
