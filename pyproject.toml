@@ -37,6 +37,7 @@ dependencies = [
   "torch>=1.13",
   "fast-pytorch-kmeans",
   "sentence-transformers",
+  "memory-profiler",
 ]
 
 [project.optional-dependencies]
