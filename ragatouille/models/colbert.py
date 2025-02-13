@@ -14,7 +14,7 @@ from colbert.modeling.checkpoint import Checkpoint
 
 from ragatouille.models.base import LateInteractionModel
 from ragatouille.models.index import ModelIndex, ModelIndexFactory
-
+from memory_profiler import profile
 # TODO: Move all bsize related calcs to `_set_bsize()`
 
 
@@ -339,7 +339,11 @@ class ColBERT(LateInteractionModel):
 
         self.docid_metadata_map = docid_metadata_map
 
-        self.model_index = ModelIndexFactory.construct(
+        @profile
+        def _construct_model_index(*args, **kwargs):
+            return ModelIndexFactory.construct(*args, **kwargs)
+        
+        self.model_index = _construct_model_index(
             "PLAID",
             self.config,
             self.checkpoint,
