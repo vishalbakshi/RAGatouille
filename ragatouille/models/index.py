@@ -130,8 +130,8 @@ class PLAIDModelIndex(ModelIndex):
         super().__init__(config)
         self.searcher: Optional[Searcher] = None
 
-    @profile
     @staticmethod
+    @profile
     def construct(
         config: ColBERTConfig,
         checkpoint: Union[str, Path],
