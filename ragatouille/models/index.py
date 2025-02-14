@@ -13,6 +13,8 @@ from colbert.infra import ColBERTConfig
 from ragatouille.models import torch_kmeans
 from memory_profiler import profile
 import psutil
+import torch
+import gc
 
 IndexType = Literal["FLAT", "HNSW", "PLAID"]
 
@@ -236,10 +238,17 @@ class PLAIDModelIndex(ModelIndex):
                 )
                 monkey_patching = False
         if monkey_patching is False:
-            print("\n=== Second Attempt (FAISS) ===")
-            CollectionIndexer._train_kmeans = self.faiss_kmeans
-            print(f"Config before FAISS attempt: {self.config.__dict__}")
-            print(f"Memory before FAISS attempt: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
+            print("\n=== FAISS Setup ===")
+            print(f"Memory before cleanup: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
+            print(f"CUDA memory before cleanup: {torch.cuda.memory_allocated()/1024/1024:.2f} MB")
+            
+            # Add explicit cleanup
+            torch.cuda.empty_cache()
+            gc.collect()
+            
+            print(f"Memory after cleanup: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
+            print(f"CUDA memory after cleanup: {torch.cuda.memory_allocated()/1024/1024:.2f} MB")
+            
             if torch.cuda.is_available():
                 import faiss
 
