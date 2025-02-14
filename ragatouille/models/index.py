@@ -155,7 +155,8 @@ class PLAIDModelIndex(ModelIndex):
     ) -> "PLAIDModelIndex":
         _, _, _, _ = index_path, index_name, index_config, verbose
         return PLAIDModelIndex(config)
-        
+
+    @profile
     def build(
         self,
         checkpoint: Union[str, Path],
