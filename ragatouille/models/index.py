@@ -192,6 +192,8 @@ class PLAIDModelIndex(ModelIndex):
             len(collection) < 75000 and kwargs.get("use_faiss", False) is False
         )
 
+        print(f"Monkey Patching: {monkey_patching}")
+        print(f"use_faiss: {kwargs.get('use_faiss', False)}")
         @profile
         def _index_with_profiling(indexer, name, collection, overwrite):
             return indexer.index(name=name, collection=collection, overwrite=overwrite)
