@@ -12,6 +12,7 @@ from colbert.infra import ColBERTConfig
 
 from ragatouille.models import torch_kmeans
 from memory_profiler import profile
+import psutil
 
 IndexType = Literal["FLAT", "HNSW", "PLAID"]
 
@@ -215,21 +216,30 @@ class PLAIDModelIndex(ModelIndex):
             # Try to keep runtime stable -- these are values that empirically didn't degrade performance at all on 3 benchmarks.
             # More tests required before warning can be removed.
             try:
+                print("\n=== First Attempt (PyTorch) ===")
+                print(f"Config before first attempt: {self.config.__dict__}")
                 indexer = Indexer(
                     checkpoint=checkpoint,
                     config=self.config,
                     verbose=verbose,
                 )
                 indexer.configure(avoid_fork_if_possible=True)
+                print(f"Memory before first index attempt: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
                 _index_with_profiling(indexer, index_name, collection, overwrite)
             except Exception as err:
+                print(f"\n=== PyTorch Failed ===")
+                print(f"Memory after failure: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
+                print(f"PyTorch-based indexing did not succeed with error: {err}")
                 print(
                     f"PyTorch-based indexing did not succeed with error: {err}",
                     "! Reverting to using FAISS and attempting again...",
                 )
                 monkey_patching = False
         if monkey_patching is False:
+            print("\n=== Second Attempt (FAISS) ===")
             CollectionIndexer._train_kmeans = self.faiss_kmeans
+            print(f"Config before FAISS attempt: {self.config.__dict__}")
+            print(f"Memory before FAISS attempt: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
             if torch.cuda.is_available():
                 import faiss
 
