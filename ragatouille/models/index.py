@@ -195,8 +195,6 @@ class PLAIDModelIndex(ModelIndex):
             len(collection) < 75000 and kwargs.get("use_faiss", False) is False
         )
 
-        print(f"Monkey Patching: {monkey_patching}")
-        print(f"use_faiss: {kwargs.get('use_faiss', False)}")
         @profile
         def _index_with_profiling(indexer, name, collection, overwrite):
             return indexer.index(name=name, collection=collection, overwrite=overwrite)
@@ -218,19 +216,14 @@ class PLAIDModelIndex(ModelIndex):
             # Try to keep runtime stable -- these are values that empirically didn't degrade performance at all on 3 benchmarks.
             # More tests required before warning can be removed.
             try:
-                print("\n=== First Attempt (PyTorch) ===")
-                print(f"Config before first attempt: {self.config.__dict__}")
                 indexer = Indexer(
                     checkpoint=checkpoint,
                     config=self.config,
                     verbose=verbose,
                 )
                 indexer.configure(avoid_fork_if_possible=True)
-                print(f"Memory before first index attempt: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
                 _index_with_profiling(indexer, index_name, collection, overwrite)
             except Exception as err:
-                print(f"\n=== PyTorch Failed ===")
-                print(f"Memory after failure: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
                 print(f"PyTorch-based indexing did not succeed with error: {err}")
                 print(
                     f"PyTorch-based indexing did not succeed with error: {err}",
@@ -238,17 +231,6 @@ class PLAIDModelIndex(ModelIndex):
                 )
                 monkey_patching = False
         if monkey_patching is False:
-            print("\n=== FAISS Setup ===")
-            print(f"Memory before cleanup: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
-            print(f"CUDA memory before cleanup: {torch.cuda.memory_allocated()/1024/1024:.2f} MB")
-            
-            # Add explicit cleanup
-            torch.cuda.empty_cache()
-            gc.collect()
-            
-            print(f"Memory after cleanup: {psutil.Process().memory_info().rss / 1024 / 1024:.2f} MB")
-            print(f"CUDA memory after cleanup: {torch.cuda.memory_allocated()/1024/1024:.2f} MB")
-            
             if torch.cuda.is_available():
                 import faiss
 
