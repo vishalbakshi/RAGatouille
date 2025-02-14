@@ -125,10 +125,12 @@ class PLAIDModelIndex(ModelIndex):
     faiss_kmeans = staticmethod(deepcopy(CollectionIndexer._train_kmeans))
     pytorch_kmeans = staticmethod(torch_kmeans._train_kmeans)
 
+    @profile
     def __init__(self, config: ColBERTConfig) -> None:
         super().__init__(config)
         self.searcher: Optional[Searcher] = None
 
+    @profile
     @staticmethod
     def construct(
         config: ColBERTConfig,
