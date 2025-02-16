@@ -224,7 +224,6 @@ class PLAIDModelIndex(ModelIndex):
                 indexer.configure(avoid_fork_if_possible=True)
                 _index_with_profiling(indexer, index_name, collection, overwrite)
             except Exception as err:
-                print(f"PyTorch-based indexing did not succeed with error: {err}")
                 print(
                     f"PyTorch-based indexing did not succeed with error: {err}",
                     "! Reverting to using FAISS and attempting again...",
