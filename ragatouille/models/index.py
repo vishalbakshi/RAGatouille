@@ -231,6 +231,7 @@ class PLAIDModelIndex(ModelIndex):
                 )
                 monkey_patching = False
         if monkey_patching is False:
+            CollectionIndexer._train_kmeans = self.faiss_kmeans
             if torch.cuda.is_available():
                 import faiss
 
