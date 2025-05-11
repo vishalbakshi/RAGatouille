@@ -355,7 +355,7 @@ class ColBERT(LateInteractionModel):
 
         print("Done indexing!")
 
-        return self.index_path
+        return self.model_index
 
     def search(
         self,
