@@ -209,9 +209,11 @@ class PLAIDModelIndex(ModelIndex):
                     verbose=verbose,
                 )
                 indexer.configure(avoid_fork_if_possible=True)
-                indexer.index(
+                index_info = indexer.index(
                     name=index_name, collection=collection, overwrite=overwrite
                 )
+
+                self.index_info = index_info
             except Exception as err:
                 print(
                     f"PyTorch-based indexing did not succeed with error: {err}",
@@ -240,7 +242,8 @@ class PLAIDModelIndex(ModelIndex):
                 verbose=verbose,
             )
             indexer.configure(avoid_fork_if_possible=True)
-            indexer.index(name=index_name, collection=collection, overwrite=overwrite)
+            index_info = indexer.index(name=index_name, collection=collection, overwrite=overwrite)
+            self.index_info = index_info
 
         return self
 
