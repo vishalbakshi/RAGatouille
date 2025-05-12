@@ -30,7 +30,7 @@ dependencies = [
   "faiss-cpu",
   "langchain_core",
  # "colbert-ai>=0.2.19",
-  "colbert-ai @ git+https://github.com/vishalbakshi/ColBERT.git@resolve_oom",
+  "colbert-ai @ git+https://github.com/vishalbakshi/ColBERT.git@save_intermediate_centroids",
   "langchain",
   "onnx",
   "srsly",
